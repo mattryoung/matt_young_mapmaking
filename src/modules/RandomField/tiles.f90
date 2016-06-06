@@ -1,0 +1,15 @@
+module tiles
+
+  use intreal_types
+  use mpivars
+
+  IMPLICIT NONE
+
+  real,    allocatable :: sendbuffer(:,:,:),recvbuffer(:,:,:)
+  integer(i8b) nsub,nmesh,ntile,nbuff
+  integer itile,jtile,ktile,ii,jj,kk,i1,j1,klins1,klins2,ksinl1,ksinl2,&
+       klayer1,klayer2,kslab1,kslab2,nksinl
+  integer(kind=mpi_offset_kind) offset_local,offset_tile,disp,offset_bytes,&
+       offset_i
+end module tiles
+

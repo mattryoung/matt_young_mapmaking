@@ -1,0 +1,76 @@
+#----------------------------------------------------------------------
+# OPTIONS FOR RUNNING ON DARWIN
+#----------------------------------------------------------------------
+
+F90 = mpif90 -lstdc++ -lmpi_cxx 
+F77 = mpif77 
+OPTIMIZE =  -O4 -w #
+FFTWOMP = -lfftw3f_omp
+MODFLAG = -J
+FFTW_PATH = /usr/local
+OMPLIB = -lgomp
+
+CC = mpicc
+C++ = mpic++
+CCOPTIMIZE = -w
+
+#----------------------------------------------------------------------
+# DO NOT MODIFY THIS FILE
+#----------------------------------------------------------------------
+
+moddir = ./mods
+
+OPTIONS =  $(OPTIMIZE) $(OPT) $(MODFLAG)$(moddir)
+CCOPTIONS = $(CCOPTIMIZE) $(CCOPT)
+
+exmddir = ../modules/
+
+EXEC = merge_pkvd
+
+mgmd = $(exmddir)/bound_commod.o\
+       $(exmddir)/intreal_types.o\
+       $(exmddir)/array_bounds.o\
+       $(exmddir)/rpart_commod.o\
+       $(exmddir)/mparam.o\
+       $(exmddir)/ipart_commod.o\
+       $(exmddir)/lists_commod.o\
+       $(exmddir)/nodes_commod.o\
+       $(exmddir)/mnodes.o\
+       $(exmddir)/mbound.o\
+       $(exmddir)/mlists.o\
+       $(exmddir)/merge_subs.o\
+       $(exmddir)/mpivars.o\
+       $(exmddir)/textlib.o\
+       $(exmddir)/timing_diagnostics.o\
+       $(exmddir)/decay_commod.o\
+       $(exmddir)/Dlin_tab_commod.o\
+       $(exmddir)/Dlin_params_commod.o\
+       $(exmddir)/input_parameters.o\
+       $(exmddir)/psubs_mods.o\
+       $(exmddir)/psubs_Dlinear.o
+
+OBJS = $(mgmd) BitSubs.o merge_pkvd.o
+
+.SUFFIXES: .o .f .f90 .F90 .c
+
+$(exmddir)/%.o: $(exmddir)/%.f90 
+	$(F90) $(OPTIONS) -c $< -o $@
+$(exmddir)/%.o: $(exmddir)/%.F90 
+	$(F90) $(OPTIONS) -c $< -o $@
+$(exmddir)/%.o: $(exmddir)/%.c
+	$(CC) $(CCOPTIONS) -c $< -o $@
+%.o: %.f
+	$(F90) $(OPTIONS) -c $< 
+%.o: %.f90
+	$(F90) $(OPTIONS) -c $< 
+%.o: %.F90
+	$(F90) $(OPTIONS) -c $< 
+%.o: %.c
+	$(CC) $(CCOPTIONS) -c $< 
+
+$(EXEC): $(OBJS) 
+	$(F90) $(OPTIONS) $(OBJS) -o  ../../bin/$(EXEC)  
+
+clean:
+	rm -f *~ *.o *.mod $(exmddir)/*.o $(exmddir)/*.mod
+

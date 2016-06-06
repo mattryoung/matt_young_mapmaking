@@ -1,0 +1,16 @@
+#----------------------------------------------------------------------
+# OPTIONS FOR RUNNING ON DARWIN
+#----------------------------------------------------------------------
+
+F90 = mpif90 -lstdc++ -lmpi_cxx -DDARWIN
+F77 = mpif77 
+OPTIMIZE =  -O4 -w #
+FFTWOMP = -lfftw3f_omp
+MODFLAG = -J
+FFTW_PATH = /usr/local
+OMPLIB = -lgomp
+
+CC = mpicc 
+C++ = mpic++ -DDARWIN
+CCOPTIMIZE = -w
+

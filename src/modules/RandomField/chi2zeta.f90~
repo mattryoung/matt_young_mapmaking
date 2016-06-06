@@ -1,0 +1,133 @@
+module chi2zeta
+
+!-------------------------------------------------------------------------
+
+! see Non-Gaussian Spikes from Chaotic Billiards in Inflation Preheating
+! Bond, Frolov, Huang, Kofman
+! arXiv:0903.3407
+
+!-------------------------------------------------------------------------
+  
+  use grid
+  use mpivars
+  use timing_diagnostics
+  use fftw_interface
+  use globalvars
+  implicit none
+
+  character *128 filefnltab
+  real fnltabmin,fnltabmax,fnltabminl,fnltabmaxl,dfnltab,dtab
+  real, allocatable:: fnlsav(:)
+  integer nfnltab,itab
+
+contains 
+  
+  subroutine chi2zetaFNL
+    
+    implicit none
+!-------------------------------------------------------------------------
+! Converts a light gaussian random field chi to a class of non-Gaussian curvature fluctuation field zeta
+!-------------------------------------------------------------------------    
+    real*8 lavg,avg,lsig,sig
+
+    if(myid==0) call timer_begin
+
+    call read_FNLtab
+    lavg=0.
+    do k=1,local_nz
+       do j=1,n
+          do i=1,n
+             !DEBUG
+             if((i==1).and.(j==1).and.(k==1)) write(*,*) "chi = ", delta(1,1,1),myid
+             delta(i,j,k) = zetaofchi(delta(i,j,k))
+             if((i==1).and.(j==1).and.(k==1)) write(*,*) "zeta = ", delta(1,1,1),myid
+             lavg = lavg + delta(i,j,k)             
+          enddo
+       enddo
+    enddo
+    
+    lavg=lavg/real(n)**3
+    call mpi_allreduce(lavg,avg,1,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
+    write(*,*) " "
+    if(myid==0) write(*,*) "Average of zeta_chi is: ",avg
+
+    delta = delta - avg
+    if(myid==0) then
+       timing_diagnostics_code='chi to zeta to delta_ng'
+       call timer_end
+    endif
+
+
+    return
+
+  end subroutine chi2zetaFNL
+    
+!=======================================================================
+
+  real function zetaofchi(chix)
+
+    implicit none
+    
+    real chix, funct
+    integer itab, dtab
+    !write(*,*) "CHI(x)",chix  
+
+    if(chix<0) chix=chix*(-1.0)
+
+    itab = int((chix-fnltabminl)/dfnltab)+1
+    dtab = (chix-(fnltabminl+(itab-1)*dfnltab))/dfnltab     
+    if(chix>fnltabmaxl) then
+       zetaofchi= 0.0!tsav(int((pktabmaxl-pktabminl)/dpktab)+1)
+    else              
+       zetaofchi = fnlsav(itab)*(1.-dtab)+fnlsav(itab+1)*dtab  
+    endif
+
+    !write(*,*) "Chi   Zeta_chi",chix, zetaofchi  
+    return 
+
+  end function zetaofchi
+
+!=======================================================================
+
+  subroutine read_FNLtab
+    implicit none
+
+    integer i
+    real dummy_real
+    if(NonGauss==3) then
+       filefnltab = "tables/FNL_spike_w3_piv12.dat"
+    elseif(NonGauss==4) then
+       filefnltab = "tables/deltaN-LUT-1.875"
+    endif
+    open(unit=1,file=filefnltab)
+    read(1,*,end=20) fnltabmin
+    nfnltab=1
+
+10  continue
+
+    read(1,*,end=20) fnltabmax
+    nfnltab=nfnltab+1 
+
+    goto 10
+20  continue
+
+    fnltabminl=fnltabmin
+    fnltabmaxl=fnltabmax
+    dfnltab=(fnltabmaxl-fnltabminl)/(nfnltab-1)
+
+    close(1)
+    if(.not. allocated(fnlsav))     allocate(fnlsav(nfnltab))
+
+    open(unit=1,file=filefnltab)
+
+    do i=1,nfnltab
+       read(1,*) dummy_real,fnlsav(i)
+    enddo
+    close(1)
+    
+    return
+
+  end subroutine read_FNLtab
+
+
+end module chi2zeta

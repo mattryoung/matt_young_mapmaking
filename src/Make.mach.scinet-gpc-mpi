@@ -1,0 +1,11 @@
+#----------------------------------------------------------------------
+# OPTIONS FOR RUNNING ON SCINET-GPC MACHINES
+#----------------------------------------------------------------------
+
+F90 = mpif90
+OPTIMIZE =  -O4 -w -mcmodel=large -shared-intel 
+
+CC = mpicc
+CCOPTIMIZE = -O4 -w 
+
+CFITSIO_LIBDIR = /home/p/pen/malvarez/cfitsio/lib

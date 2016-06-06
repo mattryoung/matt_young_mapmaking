@@ -1,0 +1,12 @@
+#----------------------------------------------------------------------
+# OPTIONS FOR RUNNING ON SCINET-GPC MACHINES
+#----------------------------------------------------------------------
+
+F90 = mpif90
+F77 = mpif77
+OPTIMIZE =  -O4 -w -mcmodel=large -shared-intel -openmp -lstdc++
+FFTWOMP = -lfftw3f_omp
+
+CC = mpicc
+CCOPTIMIZE = -O2 -w 
+

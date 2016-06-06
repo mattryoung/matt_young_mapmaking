@@ -1,0 +1,14 @@
+#----------------------------------------------------------------------
+# OPTIONS FOR RUNNING ON SCINET-BGQ
+#----------------------------------------------------------------------
+
+F90 = mpixlf90_r
+F77 = mpixlf77_r
+OPTIMIZE =  -O3 -qarch=qp -qtune=qp -qsmp -w
+FFTWOMP = -lfftw3f_omp
+
+CC = mpicc
+CCOPTIMIZE = -O4 
+CDEFS  = -DBGQ
+
+FFTW_PATH = $(SCINET_FFTW_BASE)
